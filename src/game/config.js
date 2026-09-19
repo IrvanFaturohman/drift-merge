@@ -50,6 +50,27 @@ export const CONFIG = {
     prices: [40, 120, 320], // price of line #2, #3, #4
     flashDuration: 0.35,
     showNextGhost: true, // faint dashed preview of where the next line will go
+    // overhead gantry drawn across the road (cars drive underneath it)
+    gantry: {
+      poleInset: 4, // pole centre distance beyond the track edge
+      poleRadius: 4.2,
+      beamWidth: 3.4,
+      bannerLength: 24,
+      bannerWidth: 8,
+      capLength: 3.8, // green rounded ends of the banner
+      outline: 1.2,
+      shadowOffset: { x: 3, y: 5 },
+      shadowColor: 'rgba(15, 20, 25, 0.24)',
+      colors: {
+        outline: '#2E333B',
+        beam: '#A7B0BA',
+        pole: '#B3BBC4',
+        poleLight: '#DDE2E7',
+        cap: '#34A853',
+        checkLight: '#FFFFFF',
+        checkDark: '#1F2328',
+      },
+    },
   },
 
   // ---------------------------------------------------------------- cars

@@ -671,10 +671,11 @@ export class Game {
     const worldTransform = () => ctx.setTransform(wv.k, 0, 0, wv.k, wv.ox, wv.oy);
     worldTransform();
     this.skids.draw(ctx, this.time);
-    this.lines.draw(ctx, this.track, this.time);
+    this.lines.drawGround(ctx, this.track, this.time);
     this.cars.drawTrails(ctx);
     this.particles.draw(ctx, 0, wv);
     this.cars.draw(ctx, this.time);
+    this.lines.drawOverhead(ctx, this.track);
     this.particles.draw(ctx, 1, wv);
 
     // screen-space overlays
