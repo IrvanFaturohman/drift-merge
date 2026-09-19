@@ -57,9 +57,8 @@ export const CONFIG = {
       light: '#F4F4F4',
       dark: '#1F2328',
     },
-    // every reward line is an overhead gantry across the road (cars drive underneath)
+    // reward lines 2-4 are overhead gantries across the road (cars drive underneath)
     gantry: {
-      finishOffset: 11, // the start/finish gantry stands this far past its painted line
       poleInset: 4, // pole centre distance beyond the track edge
       poleRadius: 4.2,
       beamWidth: 3.4,

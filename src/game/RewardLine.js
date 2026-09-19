@@ -61,9 +61,9 @@ export class RewardLineManager {
   }
 
   /**
-   * Ground layer (under cars). Only the start/finish (line 0) gets a checkered
-   * line painted on the asphalt; the other reward lines are just gantries.
-   * Also draws every gantry's shadow and the next-line preview.
+   * Ground layer (under cars). The start/finish (line 0) is a checkered line
+   * painted on the asphalt with no gantry; every other reward line is a gantry.
+   * Also draws the gantry shadows and the next-line preview.
    */
   drawGround(ctx, track, time) {
     if (R.showNextGhost && this.lines.length < R.max) {
@@ -72,7 +72,10 @@ export class RewardLineManager {
     const G = R.gantry;
     const half = track.halfWidth;
     for (const line of this.lines) {
-      if (line.index === 0) this.drawFinishPaint(ctx, track, line);
+      if (line.index === 0) {
+        this.drawFinishPaint(ctx, track, line);
+        continue;
+      }
       // the gantry is elevated: its shadow falls further away than a car's
       const gp = this.gantryPose(track, line);
       ctx.save();
@@ -111,6 +114,7 @@ export class RewardLineManager {
   /** Overhead layer (above cars): the gantry itself, so cars drive underneath. */
   drawOverhead(ctx, track) {
     for (const line of this.lines) {
+      if (line.index === 0) continue; // the finish line has no gantry
       const gp = this.gantryPose(track, line);
       ctx.save();
       ctx.translate(gp.x, gp.y);
@@ -120,13 +124,9 @@ export class RewardLineManager {
     }
   }
 
-  /**
-   * The start/finish gantry stands just past its painted line so both stay
-   * visible; the other gantries stand exactly on their payout point.
-   */
+  /** A gantry stands exactly on its payout point. */
   gantryPose(track, line) {
-    const offset = line.index === 0 ? R.gantry.finishOffset : 0;
-    return track.sample(line.t * track.length + offset, tmpG);
+    return track.sampleT(line.t, tmpG);
   }
 
   /** Local space: x along the track, y across it. Two poles, a beam, a checkered banner with green ends. */
