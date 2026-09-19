@@ -1,0 +1,771 @@
+:root {
+  --page-bg: #10151b;
+  --app-bg: #1b232c;
+  --panel: rgba(255, 255, 255, 0.07);
+  --text: #ffffff;
+  --muted: rgba(255, 255, 255, 0.62);
+  --money: #ffe45c;
+  --nos: #35c4ff;
+  --font: 'Fredoka', 'Trebuchet MS', system-ui, -apple-system, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--page-bg);
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body {
+  font-family: var(--font);
+  color: var(--text);
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  touch-action: none;
+}
+
+/* Portrait game viewport: full screen on phones, centred phone-shaped frame on desktop. */
+#app {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(100vw, calc(100dvh * 0.54));
+  height: 100dvh;
+  margin: 0 auto;
+  background: var(--app-bg);
+  overflow: hidden;
+}
+
+@media (min-width: 700px) and (min-height: 560px) {
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #app {
+    height: min(calc(100dvh - 32px), 900px);
+    width: auto;
+    aspect-ratio: 390 / 844;
+    border-radius: 28px;
+    box-shadow:
+      0 0 0 8px #0b0f13,
+      0 24px 60px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* ------------------------------------------------------------------ HUD */
+
+.hud {
+  flex: 0 0 auto;
+  padding: calc(env(safe-area-inset-top, 0px) + 8px) 12px 6px;
+}
+
+.money {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  transform-origin: 50% 55%;
+  will-change: transform;
+}
+
+.money-value {
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--text);
+}
+
+.coin {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #ffd24a;
+  box-shadow: inset 0 -3px 0 #f2a41f;
+  color: #9a5b00;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.hud-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.chip {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--panel);
+  white-space: nowrap;
+}
+
+.chip-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.chip-value {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.chip-mult {
+  font-size: 12px;
+  font-weight: 600;
+  color: #7ddc8a;
+}
+
+.nos {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--panel);
+  transform-origin: center;
+  will-change: transform;
+}
+
+.nos-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--nos);
+}
+
+.nos-bar {
+  position: relative;
+  width: 64px;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.nos-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+  background: var(--nos);
+  transform-origin: left center;
+  transform: scaleX(0);
+}
+
+.nos-mult {
+  min-width: 34px;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  transition: color 0.2s;
+}
+
+.nos.active .nos-mult {
+  color: var(--nos);
+}
+
+/* ------------------------------------------------------------------ play area */
+
+.play-area {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  cursor: pointer;
+}
+
+#game-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.tap-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgba(20, 26, 34, 0.72);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: hint-pulse 1.4s ease-in-out infinite;
+  transition: opacity 0.4s;
+}
+
+.tap-hint.hidden {
+  opacity: 0 !important;
+  animation: none;
+}
+
+@keyframes hint-pulse {
+  0%,
+  100% {
+    opacity: 0.95;
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateX(-50%) scale(0.96);
+  }
+}
+
+/* ------------------------------------------------------------------ buttons */
+
+.controls {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  padding: 10px 12px calc(env(safe-area-inset-bottom, 0px) + 14px);
+}
+
+.btn {
+  --c: #3d9be9;
+  --c-dark: #2a74b3;
+  --ink: #ffffff;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  height: 64px;
+  padding: 0 10px 0 11px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--c);
+  box-shadow: 0 4px 0 var(--c-dark);
+  color: var(--ink);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  transform: translateY(0) scale(1);
+  transition:
+    transform 0.09s ease-out,
+    box-shadow 0.09s ease-out,
+    filter 0.18s,
+    opacity 0.18s;
+  outline: none;
+}
+
+.btn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.btn-merge {
+  --c: #8c6cf0;
+  --c-dark: #6649c4;
+}
+.btn-car {
+  --c: #3d9be9;
+  --c-dark: #2a74b3;
+}
+.btn-line {
+  --c: #f4b73a;
+  --c-dark: #c98a17;
+  --ink: #3b2600;
+}
+.btn-upgrade {
+  --c: #39b86d;
+  --c-dark: #248a4d;
+}
+
+.btn.pressed {
+  transform: translateY(3px) scale(0.94);
+  box-shadow: 0 1px 0 var(--c-dark);
+}
+
+.btn.is-disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.9) brightness(0.78);
+  opacity: 0.5;
+}
+
+.btn.is-max {
+  opacity: 0.42;
+}
+
+.btn.ready {
+  animation: btn-ready 0.45s ease-out;
+}
+
+.btn.deny {
+  animation: btn-deny 0.3s ease-in-out;
+}
+
+@keyframes btn-ready {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes btn-deny {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+.btn-icon {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.9;
+}
+
+.btn-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 1px;
+}
+
+.btn-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-sub {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.btn-badge {
+  position: absolute;
+  right: 8px;
+  bottom: 9px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.16);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+/* Narrow viewports: drop the icons before the titles would truncate. */
+.controls {
+  container-type: inline-size;
+}
+
+@container (max-width: 356px) {
+  .btn-icon {
+    display: none;
+  }
+  .btn {
+    padding-left: 12px;
+  }
+}
+
+/* Short screens: give the circuit as much height as possible. */
+@media (max-height: 700px) {
+  .hud {
+    padding-top: calc(env(safe-area-inset-top, 0px) + 4px);
+    padding-bottom: 4px;
+  }
+  .money {
+    height: 36px;
+  }
+  .money-value {
+    font-size: 30px;
+  }
+  .hud-row {
+    margin-top: 3px;
+  }
+  .controls {
+    gap: 7px;
+    padding-top: 8px;
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+  }
+  .btn {
+    height: 54px;
+  }
+  .btn-sub {
+    font-size: 16px;
+  }
+}
+
+/* ------------------------------------------------------------------ debug */
+
+.debug {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 10;
+  width: 220px;
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(10, 14, 18, 0.9);
+  font-size: 11px;
+  cursor: default;
+}
+
+.debug[hidden] {
+  display: none;
+}
+
+.debug-head {
+  margin-bottom: 6px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.debug-head {
+  position: relative;
+}
+
+.debug-close {
+  position: absolute;
+  top: -4px;
+  right: -2px;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 50%;
+  background: #2c3947;
+  color: #fff;
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.debug-head span {
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0;
+}
+
+.debug pre {
+  margin: 0 0 8px;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 10.5px;
+  line-height: 1.45;
+  white-space: pre;
+  color: #cfe8ff;
+}
+
+.debug-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+
+.debug-actions button {
+  padding: 6px 4px;
+  border: 0;
+  border-radius: 7px;
+  background: #2c3947;
+  color: #fff;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.debug-actions button:hover {
+  background: #3a4a5c;
+}
+
+.debug-actions button.danger {
+  grid-column: span 2;
+  background: #7a2c2c;
+}
+
+.debug-actions button.danger.armed {
+  background: #d64040;
+}
+
+/* ------------------------------------------------------------------ juice */
+
+.hud {
+  position: relative;
+}
+
+.sound-btn {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 10px);
+  right: 12px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--panel);
+  color: #fff;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 0.1s;
+}
+
+.sound-btn:active {
+  transform: scale(0.88);
+}
+
+.sound-btn svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sound-btn .icon-off,
+.sound-btn.muted .icon-on {
+  display: none;
+}
+
+.sound-btn.muted .icon-off {
+  display: block;
+}
+
+.sound-btn.muted {
+  color: var(--muted);
+}
+
+#fx-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* money counter flashes gold while coins pour in */
+.money-value {
+  transition: color 0.15s;
+}
+
+.money.gain .money-value {
+  color: var(--money);
+}
+
+.coin.spin {
+  animation: coin-spin 0.35s ease-out;
+}
+
+@keyframes coin-spin {
+  0% {
+    transform: scaleX(1) scale(1.25);
+  }
+  50% {
+    transform: scaleX(0.15) scale(1.15);
+  }
+  100% {
+    transform: scaleX(1) scale(1);
+  }
+}
+
+/* NOS energy orb landing in the meter */
+.nos.charge .nos-bar {
+  animation: nos-charge 0.28s ease-out;
+}
+
+@keyframes nos-charge {
+  0% {
+    box-shadow: 0 0 0 3px rgba(191, 242, 255, 0.9);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(53, 196, 255, 0);
+  }
+}
+
+/* NOS meter at max: glow + shiver */
+.nos-fill {
+  transition: background 0.2s;
+}
+
+.nos.maxed .nos-fill {
+  background: #9ae8ff;
+}
+
+.nos.maxed .nos-bar {
+  box-shadow: 0 0 0 2px rgba(53, 196, 255, 0.45);
+  animation: nos-shiver 0.12s linear infinite;
+}
+
+@keyframes nos-shiver {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(1px);
+  }
+}
+
+/* shine sweeping across affordable buttons */
+.btn {
+  overflow: hidden;
+}
+
+.btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 40%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.32), transparent);
+  transform: translateX(-160%) skewX(-12deg);
+  pointer-events: none;
+  animation: btn-shine 3.2s ease-in-out infinite;
+}
+
+.btn-car::after {
+  animation-delay: 0.8s;
+}
+.btn-line::after {
+  animation-delay: 1.6s;
+}
+.btn-upgrade::after {
+  animation-delay: 2.4s;
+}
+
+.btn.is-disabled::after {
+  animation: none;
+  opacity: 0;
+}
+
+@keyframes btn-shine {
+  0% {
+    transform: translateX(-160%) skewX(-12deg);
+  }
+  28%,
+  100% {
+    transform: translateX(360%) skewX(-12deg);
+  }
+}
+
+/* white flash layer used by the purchase bounce */
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.btn.bought {
+  animation: btn-bought 0.4s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.btn.bought::before {
+  animation: btn-flash 0.35s ease-out;
+}
+
+@keyframes btn-bought {
+  0% {
+    transform: scale(0.9);
+  }
+  45% {
+    transform: scale(1.07);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes btn-flash {
+  0% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* merge available: a little "merge me" wiggle every couple of seconds */
+.btn-merge.can-merge:not(.pressed):not(.bought) {
+  animation: btn-wiggle 2.2s ease-in-out infinite;
+}
+
+@keyframes btn-wiggle {
+  0%,
+  70%,
+  100% {
+    transform: rotate(0) scale(1);
+  }
+  76% {
+    transform: rotate(-2.5deg) scale(1.04);
+  }
+  82% {
+    transform: rotate(2.5deg) scale(1.04);
+  }
+  88% {
+    transform: rotate(-1.5deg) scale(1.02);
+  }
+  94% {
+    transform: rotate(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn::after,
+  .btn-merge.can-merge,
+  .nos.maxed .nos-bar,
+  .tap-hint {
+    animation: none !important;
+  }
+}
