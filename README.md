@@ -82,8 +82,9 @@ All the tuning values live in `juice` and `audio` in `config.js`.
 - **NOS tap:** the feedback stays local. Screen-wide effects are left out because players tap constantly.
   - **At the finger:** a crisp cyan and white "pow" (a ring plus radial streaks), and an energy orb that flies into the NOS meter, which flashes when it lands.
   - **On every car:** a long flame spurt, a backfire ring at the exhaust, speed streaks, a small forward lurch and a brief speed surge (capped at 1.26x). The engine blips its throttle on each tap.
-  - **While boosted:** cars leave cyan light trails, the screen edges glow softly, and the meter glows and shivers when it's full.
-  - **Off by default:** a separate tap sound, tap vibration, screen shake, zoom punch and screen flash. See *Tap feedback* below.
+  - **Screen:** a small smooth shake on each tap, and "anime" speed lines that streak out at the screen edges. Both stay out of the middle of the track.
+  - **While boosted:** cars leave cyan light trails, the screen edges glow softly, speed lines stream continuously, the view rumbles slightly, and the meter glows and shivers when it's full. Shake is turned off when the device has "reduce motion" enabled.
+  - **Off by default:** a separate tap sound, tap vibration, zoom punch and screen flash. See *Tap feedback* below.
 - **Merge:** a brief slow-motion moment (hit-stop), a shockwave ring, confetti, sparkles, a tier-coloured "TIER N!" label and a screen shake that gets stronger at higher tiers.
 - **Circuit upgrade:** a checkered-flag wipe, a banner, falling confetti and cars landing on the new track.
 - **Buttons:** a shine sweeps across the buttons you can afford, and MERGE wiggles when a pair is ready. A button bounces and flashes when you buy something, and shakes with a buzz when you tap it without enough money.
@@ -114,6 +115,6 @@ A player who saves up for lines and circuits reaches Circuit 3 at about 4 minute
 - **NOS:** `nos.tapBoostAmount`, `maxBoostBonus`, `decayRate`, `decayDelay`, `flameMaxLength`, `visualIntensity`
 - **Skid and smoke:** `skid.lifetime`, `skid.alpha`, `smoke.rate`, `smoke.lifetime`
 - **Economy:** `economy.startingMoney`, `addCar.*`, `rewardLines.prices`, `circuits[i].cost / multiplier`, `cars.tiers[i].reward`, `merge.carsNeeded`
-- **Tap feedback:** `nos.rippleSize / tapBurstLines / tapOrb / flameKickLength / exhaustPop / tapSpeedLines / tapSurge`, `juice.tapStretch`, `audio.tapRevPitch / tapRevVolume`. These are off by default: `nos.screenPulse`, `juice.shakeTap / tapPunch / tapSparks`, `audio.tapSound / tapHaptic`
+- **Tap feedback:** `nos.rippleSize / tapBurstLines / tapOrb / flameKickLength / exhaustPop / tapSpeedLines / tapSurge`, `juice.tapStretch`, `audio.tapRevPitch / tapRevVolume`. `juice.shakeTap / boostRumble / edgeLines`. These are off by default: `nos.screenPulse`, `juice.tapPunch / tapSparks`, `audio.tapSound / tapHaptic`
 - **Cars:** `cars.baseSpeed`, `cornerSlowdown`, `laneOffsets`, `maxCars`, and the per-tier `speed / length / width / body / accent`
 - **Circuits:** edit `circuits[i].points`, then run `node tools/track-check.mjs` to check that the track doesn't overlap itself

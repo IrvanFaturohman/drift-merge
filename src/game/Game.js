@@ -9,6 +9,7 @@ import { FloatingTextSystem } from './FloatingText.js';
 import { BoostSystem } from './BoostSystem.js';
 import { SaveSystem } from './SaveSystem.js';
 import { AudioSystem, haptic } from './AudioSystem.js';
+import { SpeedLines } from './SpeedLines.js';
 import { UI } from '../ui/UI.js';
 import { DebugUI } from '../ui/DebugUI.js';
 import { clamp, easeInOutQuad, formatMoney, rand, rgba } from './utils.js';
@@ -37,6 +38,8 @@ export class Game {
     this.cars = new CarManager();
     this.saveSystem = new SaveSystem();
     this.audio = new AudioSystem();
+    this.speedLines = new SpeedLines();
+    this.reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 
     this.time = 0; // world time (slows during hit-stop)
     this.realTime = 0;
@@ -269,6 +272,7 @@ export class Game {
       this.cars.onTrackChanged(this.track);
       this.skids.clear();
       this.particles.clear();
+      this.speedLines.clear();
       // cars rain down onto the new circuit one after another
       this.cars.cars.forEach((car, i) => car.playDrop(0.18 + i * J.dropStagger));
       const W = CONFIG.world.width;
@@ -331,6 +335,7 @@ export class Game {
     this.tapPulse = 1;
     this.punch = 1;
     if (J.shakeTap > 0) this.addTrauma(J.shakeTap);
+    this.speedLines.burst(J.edgeLines.tapBurst, this.view.cw, this.view.ch);
     this.ui.pulseNos();
     for (const car of this.cars.cars) car.nosBurst(this.particles);
     if (clientX != null) {
@@ -571,6 +576,7 @@ export class Game {
     this.lines.update(worldDt);
     this.particles.update(worldDt);
     this.texts.update(worldDt);
+    this.speedLines.update(dt, this.boost.visual, this.view.cw, this.view.ch);
 
     this.trauma = Math.max(0, this.trauma - J.shakeDecay * dt);
     this.punch = Math.max(0, this.punch - dt * 9);
@@ -636,8 +642,9 @@ export class Game {
     const v = this.view;
     this.tracks.ensureLayer(v);
 
-    // smooth trauma-based shake + a quick zoom punch on taps
-    const amp = this.trauma * J.shakeMax;
+    // smooth trauma-based shake (+ a light rumble while boosted) and an optional zoom punch
+    const shake = Math.max(this.trauma, this.boost.visual * J.boostRumble);
+    const amp = this.reduceMotion ? 0 : shake * J.shakeMax;
     const rt = this.realTime;
     const sx = amp ? amp * (Math.sin(rt * 61.3) * 0.6 + Math.sin(rt * 97.1) * 0.4) : 0;
     const sy = amp ? amp * (Math.cos(rt * 57.7) * 0.6 + Math.sin(rt * 83.9) * 0.4) : 0;
@@ -685,6 +692,7 @@ export class Game {
       ctx.fillRect(0, 0, v.cw, v.ch);
       ctx.globalAlpha = 1;
     }
+    this.speedLines.draw(ctx);
     this.drawTransition(ctx, v);
 
     worldTransform();

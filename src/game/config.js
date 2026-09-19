@@ -185,9 +185,23 @@ export const CONFIG = {
 
   // ---------------------------------------------------------------- game feel
   juice: {
-    shakeMax: 5, // CSS px of screen shake at trauma 1
+    shakeMax: 6, // CSS px of screen shake at trauma 1
     shakeDecay: 2.8, // trauma lost per second
-    shakeTap: 0, // screen shake per NOS tap (0 = off)
+    shakeTap: 0.4, // screen shake per NOS tap (stacks a little while tapping fast)
+    boostRumble: 0.17, // continuous light rumble while NOS is active (scaled by boost)
+    edgeLines: {
+      // "anime" speed lines streaking out at the screen edges
+      rate: 85, // per second at full NOS
+      minBoost: 0.08, // no continuous lines below this boost level
+      tapBurst: 9, // extra lines on every tap
+      innerRadius: 0.68, // 0..1 of the screen's half size: lines only appear outside this
+      length: [30, 72], // CSS px
+      speed: [700, 1100], // CSS px / second, outward
+      width: [1.5, 3],
+      alpha: 0.7,
+      cyanShare: 0.3, // some lines tinted NOS-cyan
+      max: 130,
+    },
     shakeLand: 0.2,
     shakeMerge: 0.28,
     shakeMergePerTier: 0.06,
