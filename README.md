@@ -21,7 +21,7 @@ npm run deploy   # build and publish dist/ to the gh-pages branch (GitHub Pages)
 | Space (desktop) | Same as a tap |
 | **MERGE** | Merges cars of the lowest tier that has enough of them into one car of the next tier. T1→T2 takes 2 cars, T2→T3 and T3→T4 take 3, and T4 and up take 2 (`merge.carsNeeded`). When no merge is ready, the button shows progress, e.g. `T2 2/3` |
 | **ADD CAR** | Buys a Tier 1 car (8 cars at most). Price = 10 × 1.6^purchases |
-| **ADD REWARD LINE** | Adds a checkpoint at 0.25, 0.50 or 0.75 of the lap (4 lines at most). Each one is a checkered line painted on the asphalt, which is where the money is paid, with an overhead gantry just past it: poles, a beam and a checkered banner that cars drive under. The line and the banner flash when a car earns money |
+| **ADD REWARD LINE** | Adds a checkpoint gantry at 0.25, 0.50 or 0.75 of the lap (4 lines at most). A gantry is poles, a beam and a checkered banner, and cars drive under it. Only the start/finish line also has a checkered line painted on the asphalt. The banner flashes when a car earns money |
 | **UPGRADE CIRCUIT** | Unlocks the next circuit (x1.5, then x2.25 income) |
 | **D**, or 5 quick taps on the CIRCUIT chip | Opens or closes the debug panel (FPS, state, +money, spawn car, next circuit, reset save) |
 

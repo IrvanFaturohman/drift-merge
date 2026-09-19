@@ -61,39 +61,19 @@ export class RewardLineManager {
   }
 
   /**
-   * Ground layer (under cars): the checkered line painted on the asphalt (the
-   * exact point that pays out), the gantry's shadow, and the next-line preview.
+   * Ground layer (under cars). Only the start/finish (line 0) gets a checkered
+   * line painted on the asphalt; the other reward lines are just gantries.
+   * Also draws every gantry's shadow and the next-line preview.
    */
   drawGround(ctx, track, time) {
     if (R.showNextGhost && this.lines.length < R.max) {
       this.drawGhost(ctx, track, R.positions[this.lines.length], time);
     }
     const G = R.gantry;
-    const P = R.paint;
     const half = track.halfWidth;
     for (const line of this.lines) {
-      const f = line.flash;
-      const p = track.sampleT(line.t, tmp);
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.angle);
-      const cells = Math.max(4, Math.round((half * 2) / P.cell));
-      const cell = (half * 2) / cells;
-      for (let r = 0; r < P.rows; r++) {
-        for (let c = 0; c < cells; c++) {
-          ctx.fillStyle = (r + c) % 2 ? P.dark : P.light;
-          ctx.fillRect((r - P.rows / 2) * cell, -half + c * cell, cell + 0.05, cell + 0.05);
-        }
-      }
-      if (f > 0.01) {
-        ctx.globalAlpha = f * 0.7;
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect((-P.rows / 2) * cell - 1, -half, P.rows * cell + 2, half * 2);
-        ctx.globalAlpha = 1;
-      }
-      ctx.restore();
-
-      // the gantry stands just past the line and is elevated: shadow falls further away
+      if (line.index === 0) this.drawFinishPaint(ctx, track, line);
+      // the gantry is elevated: its shadow falls further away than a car's
       const gp = this.gantryPose(track, line);
       ctx.save();
       ctx.translate(gp.x + G.shadowOffset.x, gp.y + G.shadowOffset.y);
@@ -101,6 +81,31 @@ export class RewardLineManager {
       this.gantryShape(ctx, line, half, true);
       ctx.restore();
     }
+  }
+
+  drawFinishPaint(ctx, track, line) {
+    const P = R.paint;
+    const half = track.halfWidth;
+    const f = line.flash;
+    const p = track.sampleT(line.t, tmp);
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.angle);
+    const cells = Math.max(4, Math.round((half * 2) / P.cell));
+    const cell = (half * 2) / cells;
+    for (let r = 0; r < P.rows; r++) {
+      for (let c = 0; c < cells; c++) {
+        ctx.fillStyle = (r + c) % 2 ? P.dark : P.light;
+        ctx.fillRect((r - P.rows / 2) * cell, -half + c * cell, cell + 0.05, cell + 0.05);
+      }
+    }
+    if (f > 0.01) {
+      ctx.globalAlpha = f * 0.7;
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect((-P.rows / 2) * cell - 1, -half, P.rows * cell + 2, half * 2);
+      ctx.globalAlpha = 1;
+    }
+    ctx.restore();
   }
 
   /** Overhead layer (above cars): the gantry itself, so cars drive underneath. */
@@ -115,9 +120,13 @@ export class RewardLineManager {
     }
   }
 
-  /** Gantry sits a little further along the track than the painted line (follows curves). */
+  /**
+   * The start/finish gantry stands just past its painted line so both stay
+   * visible; the other gantries stand exactly on their payout point.
+   */
   gantryPose(track, line) {
-    return track.sample(line.t * track.length + R.gantry.offsetAlongTrack, tmpG);
+    const offset = line.index === 0 ? R.gantry.finishOffset : 0;
+    return track.sample(line.t * track.length + offset, tmpG);
   }
 
   /** Local space: x along the track, y across it. Two poles, a beam, a checkered banner with green ends. */
@@ -193,31 +202,17 @@ export class RewardLineManager {
     }
   }
 
-  /** Faint dashed preview of the next line to buy: its painted line and its gantry. */
+  /** Faint dashed preview of the next reward gantry to buy. */
   drawGhost(ctx, track, t, time) {
     const G = R.gantry;
-    const half = track.halfWidth;
-    const span = half + G.poleInset;
-    ctx.save();
-    ctx.globalAlpha = 0.3 + 0.1 * Math.sin(time * 3);
-    ctx.strokeStyle = '#FFFFFF';
-    ctx.lineWidth = 1.6;
-
+    const span = track.halfWidth + G.poleInset;
     const p = track.sampleT(t, tmp);
     ctx.save();
     ctx.translate(p.x, p.y);
     ctx.rotate(p.angle);
-    ctx.setLineDash([4, 4]);
-    ctx.beginPath();
-    ctx.moveTo(0, -half);
-    ctx.lineTo(0, half);
-    ctx.stroke();
-    ctx.restore();
-
-    const gp = track.sample(t * track.length + G.offsetAlongTrack, tmpG);
-    ctx.save();
-    ctx.translate(gp.x, gp.y);
-    ctx.rotate(gp.angle);
+    ctx.globalAlpha = 0.3 + 0.1 * Math.sin(time * 3);
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 1.6;
     ctx.setLineDash([4, 4]);
     ctx.beginPath();
     ctx.moveTo(0, -span);
@@ -229,8 +224,6 @@ export class RewardLineManager {
       ctx.arc(0, side * span, G.poleRadius, 0, Math.PI * 2);
       ctx.stroke();
     }
-    ctx.restore();
-
     ctx.restore();
   }
 }
