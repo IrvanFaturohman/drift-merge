@@ -50,8 +50,16 @@ export const CONFIG = {
     prices: [40, 120, 320], // price of line #2, #3, #4
     flashDuration: 0.35,
     showNextGhost: true, // faint dashed preview of where the next line will go
-    // overhead gantry drawn across the road (cars drive underneath it)
+    // checkered line painted on the asphalt - the exact point that pays out
+    paint: {
+      rows: 2,
+      cell: 4.2, // world units per checker square
+      light: '#F4F4F4',
+      dark: '#1F2328',
+    },
+    // overhead gantry across the road just past the painted line (cars drive underneath)
     gantry: {
+      offsetAlongTrack: 11, // world units past the painted line, in the driving direction
       poleInset: 4, // pole centre distance beyond the track edge
       poleRadius: 4.2,
       beamWidth: 3.4,

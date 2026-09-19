@@ -3,6 +3,7 @@ import { popScale } from './utils.js';
 
 const R = CONFIG.rewardLines;
 const tmp = {};
+const tmpG = {};
 
 /** One checkpoint across the road at a normalized track position. */
 export class RewardLine {
@@ -59,27 +60,44 @@ export class RewardLineManager {
     }
   }
 
-  /** Ground layer (under cars): painted crossing line, gantry shadow, next-line preview. */
+  /**
+   * Ground layer (under cars): the checkered line painted on the asphalt (the
+   * exact point that pays out), the gantry's shadow, and the next-line preview.
+   */
   drawGround(ctx, track, time) {
     if (R.showNextGhost && this.lines.length < R.max) {
       this.drawGhost(ctx, track, R.positions[this.lines.length], time);
     }
     const G = R.gantry;
+    const P = R.paint;
+    const half = track.halfWidth;
     for (const line of this.lines) {
-      const p = track.sampleT(line.t, tmp);
-      const half = track.halfWidth;
       const f = line.flash;
+      const p = track.sampleT(line.t, tmp);
       ctx.save();
       ctx.translate(p.x, p.y);
       ctx.rotate(p.angle);
-      ctx.fillStyle = `rgba(255,255,255,${0.5 + 0.4 * f})`;
-      ctx.fillRect(-1.2, -half, 2.4, half * 2);
+      const cells = Math.max(4, Math.round((half * 2) / P.cell));
+      const cell = (half * 2) / cells;
+      for (let r = 0; r < P.rows; r++) {
+        for (let c = 0; c < cells; c++) {
+          ctx.fillStyle = (r + c) % 2 ? P.dark : P.light;
+          ctx.fillRect((r - P.rows / 2) * cell, -half + c * cell, cell + 0.05, cell + 0.05);
+        }
+      }
+      if (f > 0.01) {
+        ctx.globalAlpha = f * 0.7;
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect((-P.rows / 2) * cell - 1, -half, P.rows * cell + 2, half * 2);
+        ctx.globalAlpha = 1;
+      }
       ctx.restore();
 
-      // the gantry is elevated: its shadow falls a little further away than a car's
+      // the gantry stands just past the line and is elevated: shadow falls further away
+      const gp = this.gantryPose(track, line);
       ctx.save();
-      ctx.translate(p.x + G.shadowOffset.x, p.y + G.shadowOffset.y);
-      ctx.rotate(p.angle);
+      ctx.translate(gp.x + G.shadowOffset.x, gp.y + G.shadowOffset.y);
+      ctx.rotate(gp.angle);
       this.gantryShape(ctx, line, half, true);
       ctx.restore();
     }
@@ -88,13 +106,18 @@ export class RewardLineManager {
   /** Overhead layer (above cars): the gantry itself, so cars drive underneath. */
   drawOverhead(ctx, track) {
     for (const line of this.lines) {
-      const p = track.sampleT(line.t, tmp);
+      const gp = this.gantryPose(track, line);
       ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.angle);
+      ctx.translate(gp.x, gp.y);
+      ctx.rotate(gp.angle);
       this.gantryShape(ctx, line, track.halfWidth, false);
       ctx.restore();
     }
+  }
+
+  /** Gantry sits a little further along the track than the painted line (follows curves). */
+  gantryPose(track, line) {
+    return track.sample(line.t * track.length + R.gantry.offsetAlongTrack, tmpG);
   }
 
   /** Local space: x along the track, y across it. Two poles, a beam, a checkered banner with green ends. */
@@ -170,17 +193,31 @@ export class RewardLineManager {
     }
   }
 
+  /** Faint dashed preview of the next line to buy: its painted line and its gantry. */
   drawGhost(ctx, track, t, time) {
     const G = R.gantry;
-    const p = track.sampleT(t, tmp);
     const half = track.halfWidth;
     const span = half + G.poleInset;
     ctx.save();
-    ctx.translate(p.x, p.y);
-    ctx.rotate(p.angle);
     ctx.globalAlpha = 0.3 + 0.1 * Math.sin(time * 3);
     ctx.strokeStyle = '#FFFFFF';
     ctx.lineWidth = 1.6;
+
+    const p = track.sampleT(t, tmp);
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.angle);
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(0, -half);
+    ctx.lineTo(0, half);
+    ctx.stroke();
+    ctx.restore();
+
+    const gp = track.sample(t * track.length + G.offsetAlongTrack, tmpG);
+    ctx.save();
+    ctx.translate(gp.x, gp.y);
+    ctx.rotate(gp.angle);
     ctx.setLineDash([4, 4]);
     ctx.beginPath();
     ctx.moveTo(0, -span);
@@ -192,6 +229,8 @@ export class RewardLineManager {
       ctx.arc(0, side * span, G.poleRadius, 0, Math.PI * 2);
       ctx.stroke();
     }
+    ctx.restore();
+
     ctx.restore();
   }
 }
